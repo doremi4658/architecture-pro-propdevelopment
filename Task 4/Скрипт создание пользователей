@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Скрипт для создания отдельных пользователей для каждой роли
+
+set -e
+
+echo "Создание директории для сертификатов пользователей..."
+mkdir -p user-certs-per-role
+cd user-certs-per-role
+
+# Создание пользователя для роли cluster-admin
+echo "Создание пользователя ivan-admin (Иван, администратор кластера)..."
+openssl genrsa -out ivan-admin.key 2048
+openssl req -new -key ivan-admin.key -out ivan-admin.csr -subj "/CN=ivan-admin/O=admin-group"
+sudo openssl x509 -req -in ivan-admin.csr \
+  -CA /var/lib/minikube/certs/ca.crt \
+  -CAkey /var/lib/minikube/certs/ca.key \
+  -CAcreateserial \
+  -out ivan-admin.crt -days 365
+
+# Создание пользователя для роли namespace-admin
+echo "Создание пользователя petr-namespace (Петр, администратор namespace)..."
+openssl genrsa -out petr-namespace.key 2048
+openssl req -new -key petr-namespace.key -out petr-namespace.csr -subj "/CN=petr-namespace/O=namespace-admin-group"
+sudo openssl x509 -req -in petr-namespace.csr \
+  -CA /var/lib/minikube/certs/ca.crt \
+  -CAkey /var/lib/minikube/certs/ca.key \
+  -CAcreateserial \
+  -out petr-namespace.crt -days 365
+
+# Создание пользователя для роли developer
+echo "Создание пользователя sergey-dev (Сергей, разработчик)..."
+openssl genrsa -out sergey-dev.key 2048
+openssl req -new -key sergey-dev.key -out sergey-dev.csr -subj "/CN=sergey-dev/O=developer-group"
+sudo openssl x509 -req -in sergey-dev.csr \
+  -CA /var/lib/minikube/certs/ca.crt \
+  -CAkey /var/lib/minikube/certs/ca.key \
+  -CAcreateserial \
+  -out sergey-dev.crt -days 365
+
+# Создание пользователя для роли viewer
+echo "Создание пользователя nikolay-view (Николай, наблюдатель)..."
+openssl genrsa -out nikolay-view.key 2048
+openssl req -new -key nikolay-view.key -out nikolay-view.csr -subj "/CN=nikolay-view/O=viewer-group"
+sudo openssl x509 -req -in nikolay-view.csr \
+  -CA /var/lib/minikube/certs/ca.crt \
+  -CAkey /var/lib/minikube/certs/ca.key \
+  -CAcreateserial \
+  -out nikolay-view.crt -days 365
+
+# Создание пользователя для роли security-auditor
+echo "Создание пользователя alexey-audit (Алексей, аудитор)..."
+openssl genrsa -out alexey-audit.key 2048
+openssl req -new -key alexey-audit.key -out alexey-audit.csr -subj "/CN=alexey-audit/O=security-auditor-group"
+sudo openssl x509 -req -in alexey-audit.csr \
+  -CA /var/lib/minikube/certs/ca.crt \
+  -CAkey /var/lib/minikube/certs/ca.key \
+  -CAcreateserial \
+  -out alexey-audit.crt -days 365
+
+# Настройка контекстов для пользователей
+echo "Настройка контекстов Kubernetes для пользователей по ролям..."
+kubectl config set-credentials ivan-admin --client-certificate=ivan-admin.crt --client-key=ivan-admin.key
+kubectl config set-context ivan-admin-context --cluster=minikube --user=ivan-admin
+
+kubectl config set-credentials petr-namespace --client-certificate=petr-namespace.crt --client-key=petr-namespace.key
+kubectl config set-context petr-namespace-context --cluster=minikube --user=petr-namespace
+
+kubectl config set-credentials sergey-dev --client-certificate=sergey-dev.crt --client-key=sergey-dev.key
+kubectl config set-context sergey-dev-context --cluster=minikube --user=sergey-dev
+
+kubectl config set-credentials nikolay-view --client-certificate=nikolay-view.crt --client-key=nikolay-view.key
+kubectl config set-context nikolay-view-context --cluster=minikube --user=nikolay-view
+
+kubectl config set-credentials alexey-audit --client-certificate=alexey-audit.crt --client-key=alexey-audit.key
+kubectl config set-context alexey-audit-context --cluster=minikube --user=alexey-audit
