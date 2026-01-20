@@ -4,12 +4,10 @@
 
 # Скрипт для создания ролей для каждого пользователя
 
-set -e
-
 echo "Создание namespace для тестирования..."
-kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
-kubectl create namespace development --dry-run=client -o yaml | kubectl apply -f -
-kubectl create namespace testing --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace production 
+kubectl create namespace development 
+kubectl create namespace testing 
 
 
 echo "Создание роли namespace-admin-role..."
