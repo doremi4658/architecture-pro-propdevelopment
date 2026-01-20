@@ -1,0 +1,6 @@
+Роль	        Права роли	                            Группа пользователей	                      Пользователь 
+cluster-admin	Полный доступ ко всем ресурсам кластера	Администраторы инфраструктуры (admin-group)	ivan-admin (Иван, администратор)
+namespace-admin	Полный доступ ко всем ресурсам в определенном namespace (кроме Secrets)	Руководители проектов, DevOps-инженеры (namespace-admin-group)	petr-namespace (Петр, администратор namespace)
+developer	Чтение/запись Deployment, Pod, Service, ConfigMap в определенном namespace	Разработчики приложений (developer-group)	sergey-dev (Сергей, разработчик)
+viewer	Только чтение всех ресурсов в определенном namespace	Тестировщики, аналитики (viewer-group)	nikolay-view (Николай, наблюдатель)
+security-auditor	Чтение всех ресурсов, включая Secrets, во всех namespace	Специалисты по безопасности (security-auditor-group)	alexey-audit (Алексей, аудитор)
