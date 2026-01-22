@@ -1,1 +1,44 @@
+cat > audit-filter.sh << 'EOF'
+#!/bin/bash
 
+AUDIT_LOG="/var/log/kubernetes-audit/audit.log"
+
+if [ ! -f "$AUDIT_LOG" ]; then
+    echo "Файл $AUDIT_LOG не найден."
+    exit 1
+fi
+
+# Создаем JSON с подозрительными событиями
+{
+    echo "["
+    
+    # 1. Доступ к secrets
+    grep -h 'secrets' "$AUDIT_LOG" | grep -h '"verb":"get"' | head -5 | sed 's/^/  /'
+    echo ","
+    
+    # 2. Привилегированные поды
+    grep -h 'privileged.*true' "$AUDIT_LOG" | head -5 | sed 's/^/  /'
+    echo ","
+    
+    # 3. Использование kubectl exec
+    grep -h '"subresource":"exec"' "$AUDIT_LOG" | head -5 | sed 's/^/  /'
+    echo ","
+    
+    # 4. Удаление audit-policy
+    grep -h -i 'audit-policy' "$AUDIT_LOG" | head -5 | sed 's/^/  /'
+    echo ","
+    
+    # 5. Создание RoleBinding с cluster-admin
+    grep -h 'RoleBinding' "$AUDIT_LOG" | grep -h 'cluster-admin' | head -5 | sed 's/^/  /'
+    
+    echo "]"
+} > audit-extract.json
+
+echo "Создан файл audit-extract.json"
+EOF
+
+chmod +x audit-filter.sh
+
+# Копируем файл аудита и запускаем фильтрацию
+minikube ssh "sudo cat /var/log/kubernetes-audit/audit.log" > audit.log
+./audit-filter.sh
