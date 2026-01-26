@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Скрипт для привязки конкретных пользователей к конкретным ролям
+
+echo "Привязка пользователей к соответствующим ролям..."
+
+echo "1. Привязка nikolay-view к роли viewer в production namespace..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nikolay-view-binding
+  namespace: production
+subjects:
+- kind: User
+  name: nikolay-view
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: viewer-role
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+echo "2. Привязка sergey-dev к роли developer в development namespace..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sergey-dev-binding
+  namespace: development
+subjects:
+- kind: User
+  name: sergey-dev
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer-role
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+echo "3. Привязка petr-namespace к роли namespace-admin в production namespace..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: petr-namespace-binding
+  namespace: production
+subjects:
+- kind: User
+  name: petr-namespace
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: namespace-admin-role
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+echo "4. Привязка alexey-audit к ClusterRole security-auditor..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alexey-audit-binding
+subjects:
+- kind: User
+  name: alexey-audit
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: security-auditor-role
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+echo "5. Привязка ivan-admin к ClusterRole cluster-admin..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ivan-admin-binding
+subjects:
+- kind: User
+  name: ivan-admin
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+EOF
+

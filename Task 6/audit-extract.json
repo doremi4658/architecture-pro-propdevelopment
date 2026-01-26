@@ -1,0 +1,207 @@
+[
+  {
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "RequestResponse",
+    "auditID": "a1b2c3d4-5678-90ab-cdef-123456789012",
+    "stage": "ResponseComplete",
+    "requestURI": "/api/v1/namespaces/kube-system/secrets/default-token-abcde",
+    "verb": "get",
+    "user": {
+      "username": "system:serviceaccount:secure-ops:monitoring",
+      "uid": "efgh-5678-ijkl-9012",
+      "groups": [
+        "system:serviceaccounts",
+        "system:serviceaccounts:secure-ops",
+        "system:authenticated"
+      ]
+    },
+    "sourceIPs": ["192.168.49.1"],
+    "userAgent": "kubectl/v1.28.0 (linux/amd64) kubernetes/abcd123",
+    "objectRef": {
+      "resource": "secrets",
+      "namespace": "kube-system",
+      "name": "default-token-abcde",
+      "apiVersion": "v1"
+    },
+    "responseStatus": {
+      "metadata": {},
+      "code": 200
+    },
+    "requestReceivedTimestamp": "2024-01-15T10:30:45.123456Z",
+    "stageTimestamp": "2024-01-15T10:30:45.234567Z",
+    "annotations": {
+      "authorization.k8s.io/decision": "allow",
+      "authorization.k8s.io/reason": "RBAC: allowed by RoleBinding \"admin\" of ClusterRole \"admin\" to User \"minikube-user\""
+    }
+  },
+  {
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "RequestResponse",
+    "auditID": "b2c3d4e5-6789-01ab-cdef-234567890123",
+    "stage": "ResponseComplete",
+    "requestURI": "/api/v1/namespaces/secure-ops/pods",
+    "verb": "create",
+    "user": {
+      "username": "minikube-user",
+      "uid": "12345678-90ab-cdef-1234-567890abcdef",
+      "groups": [
+        "system:masters",
+        "system:authenticated"
+      ]
+    },
+    "sourceIPs": ["192.168.49.1"],
+    "userAgent": "kubectl/v1.28.0 (linux/amd64) kubernetes/abcd123",
+    "objectRef": {
+      "resource": "pods",
+      "namespace": "secure-ops",
+      "name": "privileged-pod",
+      "apiVersion": "v1"
+    },
+    "requestObject": {
+      "metadata": {
+        "name": "privileged-pod",
+        "namespace": "secure-ops"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "pwn",
+            "image": "alpine",
+            "command": ["sleep", "3600"],
+            "securityContext": {
+              "privileged": true
+            }
+          }
+        ],
+        "restartPolicy": "Never"
+      }
+    },
+    "responseStatus": {
+      "metadata": {},
+      "code": 201
+    },
+    "requestReceivedTimestamp": "2024-01-15T10:32:15.654321Z",
+    "stageTimestamp": "2024-01-15T10:32:15.765432Z"
+  },
+  {
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "RequestResponse",
+    "auditID": "c3d4e5f6-7890-12ab-cdef-345678901234",
+    "stage": "ResponseComplete",
+    "requestURI": "/api/v1/namespaces/kube-system/pods/coredns-abcde/exec",
+    "verb": "create",
+    "user": {
+      "username": "minikube-user",
+      "uid": "12345678-90ab-cdef-1234-567890abcdef",
+      "groups": [
+        "system:masters",
+        "system:authenticated"
+      ]
+    },
+    "sourceIPs": ["192.168.49.1"],
+    "userAgent": "kubectl/v1.28.0 (linux/amd64) kubernetes/abcd123",
+    "objectRef": {
+      "resource": "pods",
+      "namespace": "kube-system",
+      "name": "coredns-abcde",
+      "subresource": "exec",
+      "apiVersion": "v1"
+    },
+    "responseStatus": {
+      "metadata": {},
+      "code": 200
+    },
+    "requestReceivedTimestamp": "2024-01-15T10:33:45.987654Z",
+    "stageTimestamp": "2024-01-15T10:33:46.012345Z"
+  },
+  {
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "RequestResponse",
+    "auditID": "d4e5f6g7-8901-23ab-cdef-456789012345",
+    "stage": "ResponseComplete",
+    "requestURI": "/apis/rbac.authorization.k8s.io/v1/namespaces/secure-ops/rolebindings",
+    "verb": "create",
+    "user": {
+      "username": "minikube-user",
+      "uid": "12345678-90ab-cdef-1234-567890abcdef",
+      "groups": [
+        "system:masters",
+        "system:authenticated"
+      ]
+    },
+    "sourceIPs": ["192.168.49.1"],
+    "userAgent": "kubectl/v1.28.0 (linux/amd64) kubernetes/abcd123",
+    "objectRef": {
+      "resource": "rolebindings",
+      "namespace": "secure-ops",
+      "name": "escalate-binding",
+      "apiGroup": "rbac.authorization.k8s.io",
+      "apiVersion": "v1"
+    },
+    "requestObject": {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "escalate-binding",
+        "namespace": "secure-ops"
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "ClusterRole",
+        "name": "cluster-admin"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "monitoring",
+          "namespace": "secure-ops"
+        }
+      ]
+    },
+    "responseStatus": {
+      "metadata": {},
+      "code": 201
+    },
+    "requestReceivedTimestamp": "2024-01-15T10:35:20.111111Z",
+    "stageTimestamp": "2024-01-15T10:35:20.222222Z"
+  },
+  {
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "RequestResponse",
+    "auditID": "e5f6g7h8-9012-34ab-cdef-567890123456",
+    "stage": "ResponseComplete",
+    "requestURI": "/apis/audit.k8s.io/v1/audit-policies/audit-policy.yaml",
+    "verb": "delete",
+    "user": {
+      "username": "minikube-user",
+      "uid": "12345678-90ab-cdef-1234-567890abcdef",
+      "groups": [
+        "system:masters",
+        "system:authenticated"
+      ],
+      "extra": {
+        "impersonated-user": ["admin"]
+      }
+    },
+    "sourceIPs": ["192.168.49.1"],
+    "userAgent": "kubectl/v1.28.0 (linux/amd64) kubernetes/abcd123",
+    "objectRef": {
+      "resource": "audit-policies",
+      "name": "audit-policy.yaml",
+      "apiGroup": "audit.k8s.io",
+      "apiVersion": "v1"
+    },
+    "responseStatus": {
+      "metadata": {},
+      "code": 403,
+      "message": "User \"admin\" cannot delete resource \"audit-policies\" in API group \"audit.k8s.io\" at the cluster scope"
+    },
+    "requestReceivedTimestamp": "2024-01-15T10:36:10.333333Z",
+    "stageTimestamp": "2024-01-15T10:36:10.444444Z"
+  }
+]

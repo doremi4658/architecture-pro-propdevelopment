@@ -1,0 +1,114 @@
+# Создаем все четыре сервиса с метками
+kubectl run front-end-app --image=nginx --labels role=front-end --expose --port 80
+kubectl run back-end-api-app --image=nginx --labels role=back-end-api --expose --port 80
+kubectl run admin-front-end-app --image=nginx --labels role=admin-front-end --expose --port 80
+kubectl run admin-back-end-api-app --image=nginx --labels role=admin-back-end-api --expose --port 80
+
+Создаем файл non-admin-api-allow.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: non-admin-api-allow
+spec:
+  podSelector:
+    matchLabels:
+      role: back-end-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: front-end
+    ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: non-admin-frontend-allow
+spec:
+  podSelector:
+    matchLabels:
+      role: front-end
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: back-end-api
+    ports:
+    - protocol: TCP
+      port: 80
+
+Создаем файл admin-api-allow.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: admin-api-allow
+spec:
+  podSelector:
+    matchLabels:
+      role: admin-back-end-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: admin-front-end
+    ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: admin-frontend-allow
+spec:
+  podSelector:
+    matchLabels:
+      role: admin-front-end
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: admin-back-end-api
+    ports:
+    - protocol: TCP
+      port: 80
+
+
+Применяем сетевые политики 
+# Применяем политику для non-admin сервисов
+kubectl apply -f non-admin-api-allow.yaml
+
+# Применяем политику для admin сервисов
+kubectl apply -f admin-api-allow.yaml
+
+Проверка сетевых политик 
+# Проверяем, что политики созданы
+kubectl get networkpolicies
+
+# Проверяем доступность трафика между разрешенными сервисами
+echo "Проверка доступа из front-end к back-end-api:"
+kubectl run test-frontend --rm -i -t --image=alpine --labels role=front-end -- sh -c 'wget -qO- --timeout=2 http://back-end-api-app'
+
+echo "Проверка доступа из back-end-api к front-end:"
+kubectl run test-backend --rm -i -t --image=alpine --labels role=back-end-api -- sh -c 'wget -qO- --timeout=2 http://front-end-app'
+
+echo "Проверка доступа из admin-front-end к admin-back-end-api:"
+kubectl run test-admin-frontend --rm -i -t --image=alpine --labels role=admin-front-end -- sh -c 'wget -qO- --timeout=2 http://admin-back-end-api-app'
+
+echo "Проверка доступа из admin-back-end-api к admin-front-end:"
+kubectl run test-admin-backend --rm -i -t --image=alpine --labels role=admin-back-end-api -- sh -c 'wget -qO- --timeout=2 http://admin-front-end-app'
+
+# Проверяем, что запрещенный трафик блокируется
+echo "Проверка НЕдоступности из front-end к admin-back-end-api (должен быть таймаут):"
+kubectl run test-denied1 --rm -i -t --image=alpine --labels role=front-end -- sh -c 'wget -qO- --timeout=2 http://admin-back-end-api-app 
+echo "Проверка НЕдоступности из admin-front-end к back-end-api (должен быть таймаут):"
+kubectl run test-denied2 --rm -i -t --image=alpine --labels role=admin-front-end -- sh -c 'wget -qO- --timeout=2 http://back-end-api-app 
